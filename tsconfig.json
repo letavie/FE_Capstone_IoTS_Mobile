@@ -2,11 +2,13 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    "baseUrl": ".", // Thêm baseUrl để hỗ trợ paths
     "paths": {
-      "@/*": [
-        "./*"
-      ]
-    }
+      "@/*": ["./*"] // Alias cho đường dẫn gốc
+    },
+    "moduleResolution": "bundler", // Đảm bảo tìm kiếm module theo kiểu Node.js
+    "allowSyntheticDefaultImports": true, // Hỗ trợ import mặc định
+    "jsx": "react-native" // Đảm bảo JSX hoạt động với React Native
   },
   "include": [
     "**/*.ts",
