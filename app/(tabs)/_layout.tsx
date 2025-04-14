@@ -49,13 +49,14 @@
 //   );
 // }
 
+// app/(tabs)/_layout.tsx
+
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import Home from './Home';
 import Blog from './Blog';
 import Notifications from './Notifications';
 import Profile from './Profile';
-
 const Tab = createBottomTabNavigator();
 
 export default function TabLayout() {

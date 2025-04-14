@@ -1,7 +1,8 @@
+// hooks/useThemeColors.tsx
 import { useState, useEffect } from 'react';
 import { useColorScheme } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Colors } from '@/constants/Colors';
+import asyncStorageService from '../services/storage/AsyncStorageService';
+import { Colors } from '../constants/Colors';
 
 const hslToHex = (h: number, s: number, l: number) => {
   l /= 100;
@@ -24,9 +25,9 @@ export const useThemeColors = () => {
   useEffect(() => {
     const loadTheme = async () => {
       try {
-        const savedTheme = await AsyncStorage.getItem('theme');
+        const savedTheme = await asyncStorageService.getItem<'light' | 'dark'>('theme');
         if (savedTheme) {
-          setTheme(savedTheme as 'light' | 'dark');
+          setTheme(savedTheme);
         } else {
           setTheme(systemColorScheme ?? 'light');
         }
@@ -41,7 +42,7 @@ export const useThemeColors = () => {
   // Save theme preference when it changes
   const saveTheme = async (newTheme: 'light' | 'dark') => {
     try {
-      await AsyncStorage.setItem('theme', newTheme);
+      await asyncStorageService.setItem('theme', newTheme);
     } catch (error) {
       console.error('Failed to save theme:', error);
     }
@@ -67,54 +68,66 @@ export const useThemeColors = () => {
 
   const colors = {
     light: {
-      border: hslToHex(214, 31, 91), // #d9e2ec
-      input: hslToHex(214, 31, 91), // #d9e2ec
-      ring: hslToHex(221, 39, 11), // #1a2526
-      background: hslToHex(0, 0, 100), // #ffffff
-      foreground: hslToHex(222, 47, 11), // #0f172a
-      primary: "#007AFF",  // #1a2526
-      primaryForeground: hslToHex(210, 40, 98), // #f5faff
-      secondary: hslToHex(215, 28, 17), // #1f2a44
-      secondaryForeground: hslToHex(210, 40, 98), // #f5faff
-      destructive: hslToHex(0, 62, 30), // #9b2c2c
-      destructiveForeground: hslToHex(210, 40, 98), // #f5faff
-      muted: hslToHex(215, 28, 17), // #1f2a44
-      mutedForeground: hslToHex(215, 20, 65), // #94a3b8
-      accent: hslToHex(215, 28, 17), // #1f2a44
-      accentForeground: hslToHex(210, 40, 98), // #f5faff
-      popover: hslToHex(0, 0, 100), // #ffffff
-      popoverForeground: hslToHex(222, 47, 11), // #0f172a
-      card: hslToHex(0, 0, 100), // #ffffff
-      cardForeground: hslToHex(222, 47, 11), // #0f172a
-      mainColer: "#f4f8fb",
-      textColer: "#58bbf9",
-      bgColer: "#EBF5FF",
-      headerBg: "#007AFF",
+      border: hslToHex(214, 31, 91),
+      input: hslToHex(214, 31, 91),
+      ring: hslToHex(221, 39, 11),
+      background: hslToHex(0, 0, 100),
+      foreground: hslToHex(222, 47, 11),
+      primary: '#007AFF',
+      primaryForeground: hslToHex(210, 40, 98),
+      secondary: hslToHex(215, 28, 17),
+      secondaryForeground: hslToHex(210, 40, 98),
+      destructive: hslToHex(0, 62, 30),
+      destructiveForeground: hslToHex(210, 40, 98),
+      muted: hslToHex(215, 28, 17),
+      mutedForeground: hslToHex(215, 20, 65),
+      accent: hslToHex(215, 28, 17),
+      accentForeground: hslToHex(210, 40, 98),
+      popover: hslToHex(0, 0, 100),
+      popoverForeground: hslToHex(222, 47, 11),
+      card: hslToHex(0, 0, 100),
+      cardForeground: hslToHex(222, 47, 11),
+      mainColer: '#f4f8fb',
+      textColer: '#58bbf9',
+      bgColer: '#EBF5FF',
+      headerBg: '#007AFF',
+      // Add missing properties
+      text: hslToHex(222, 47, 11), // Same as foreground for consistency
+      tint: '#007AFF', // Same as primary for consistency
+      icon: hslToHex(222, 47, 11), // Same as foreground
+      tabIconDefault: hslToHex(215, 20, 65), // Same as mutedForeground
+      tabIconSelected: '#007AFF', // Same as primary
     },
     dark: {
-      border: hslToHex(214, 31, 20), // #2e3a4d
-      input: hslToHex(214, 31, 20), // #2e3a4d
-      ring: hslToHex(221, 39, 80), // #b3c0c2
-      background: hslToHex(0, 0, 0), // #000000
-      foreground: hslToHex(210, 40, 98), // #f5faff
-      primary: hslToHex(210, 40, 98), // #f5faff
-      primaryForeground: hslToHex(221, 39, 11), // #1a2526
-      secondary: hslToHex(215, 28, 80), // #b3c0c2
-      secondaryForeground: hslToHex(215, 28, 17), // #1f2a44
-      destructive: hslToHex(0, 62, 50), // #e53e3e
-      destructiveForeground: hslToHex(210, 40, 98), // #f5faff
-      muted: hslToHex(215, 28, 80), // #b3c0c2
-      mutedForeground: hslToHex(215, 20, 35), // #4b5e77
-      accent: hslToHex(215, 28, 80), // #b3c0c2
-      accentForeground: hslToHex(215, 28, 17), // #1f2a44
-      popover: hslToHex(0, 0, 0), // #000000
-      popoverForeground: hslToHex(210, 40, 98), // #f5faff
-      card: hslToHex(0, 0, 0), // #000000
-      cardForeground: hslToHex(210, 40, 98), // #f5faff
-      mainColer: "#f4f8fb",
-      textColer: "#58bbf9",
-      bgColer: "#EBF5FF",
-      headerBg: "#007AFF",
+      border: hslToHex(214, 31, 20),
+      input: hslToHex(214, 31, 20),
+      ring: hslToHex(221, 39, 80),
+      background: hslToHex(0, 0, 0),
+      foreground: hslToHex(210, 40, 98),
+      primary: hslToHex(210, 40, 98),
+      primaryForeground: hslToHex(221, 39, 11),
+      secondary: hslToHex(215, 28, 80),
+      secondaryForeground: hslToHex(215, 28, 17),
+      destructive: hslToHex(0, 62, 50),
+      destructiveForeground: hslToHex(210, 40, 98),
+      muted: hslToHex(215, 28, 80),
+      mutedForeground: hslToHex(215, 20, 35),
+      accent: hslToHex(215, 28, 80),
+      accentForeground: hslToHex(215, 28, 17),
+      popover: hslToHex(0, 0, 0),
+      popoverForeground: hslToHex(210, 40, 98),
+      card: hslToHex(0, 0, 0),
+      cardForeground: hslToHex(210, 40, 98),
+      mainColer: '#f4f8fb',
+      textColer: '#58bbf9',
+      bgColer: '#EBF5FF',
+      headerBg: '#007AFF',
+      // Add missing properties
+      text: hslToHex(210, 40, 98), // Same as foreground for consistency
+      tint: hslToHex(210, 40, 98), // Same as primary for consistency
+      icon: hslToHex(210, 40, 98), // Same as foreground
+      tabIconDefault: hslToHex(215, 20, 35), // Same as mutedForeground
+      tabIconSelected: hslToHex(210, 40, 98), // Same as primary
     },
   };
 
