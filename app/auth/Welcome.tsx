@@ -21,8 +21,10 @@ export default function Welcome() {
         className="w-32 h-32 mb-4"
         resizeMode="contain"
       />
-      {/* <Text className="text-4xl font-Mainfont font-bold text-textColer">IoTS</Text> */}
-      <Text className="text-lg font-Mainfont text-textColer">Welcome to IoTS</Text>
+       {/* Welcome Message */}
+       <Text className="text-3xl font-bold mb-10" style={{ color: colors.foreground }}>
+            Welcome to IoTS!
+          </Text>
     </View>
   );
 }
