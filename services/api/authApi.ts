@@ -86,9 +86,18 @@ export const login = async (payload: { email: string; password: string }) => {
   try {
     const response = await api.post('/api/login', payload);
     console.log('Login response:', response.data); 
-    if (response.data.data) {
+    // if (response.data.data) {
+    //   await AsyncStorage.setItem('token', response.data.data.token);
+    //   await AsyncStorage.setItem('user', JSON.stringify(response.data.data));
+    // }
+    if (response.data?.data?.token) {
       await AsyncStorage.setItem('token', response.data.data.token);
       await AsyncStorage.setItem('user', JSON.stringify(response.data.data));
+      // Verify the token was stored
+      const storedToken = await AsyncStorage.getItem('token');
+      console.log('Stored token:', storedToken);
+    } else {
+      throw new Error('Token not found in response');
     }
     return response.data;
   } catch (error: any) {

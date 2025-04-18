@@ -9,9 +9,9 @@ export type RootStackParamList = {
     '/(tabs)/cart': undefined;
     '/(tabs)/Notifications': undefined;
     '/(tabs)/Profile': undefined;
-    '/(tabs)/device/DeviceList': undefined;
-    '/(tabs)/device/ComboList': undefined;
-    '/(tabs)/device/DeviceDetails': undefined;
-    '/(tabs)/device/ComboDetails': undefined;
+    '/device/DeviceList': undefined;
+    '/device/ComboList': undefined;
+    '/device/DeviceDetails': undefined;
+    '/device/ComboDetails': undefined;
     '/cart/Cart': undefined;
   };

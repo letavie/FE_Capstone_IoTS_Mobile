@@ -7,7 +7,8 @@ export interface PaginationParams {
   searchKeyword: string;
   storeFilterId?: number;
   categoryFilterId?: number;
-  deviceTypeFilter?: number;
+  deviceTypeFilter?: number | null; // Optional for broader filtering
+  sortBy?: 'priceAsc' | 'priceDesc' | 'rating' | null; // New sort field
 }
 
 export interface IotDevice {
