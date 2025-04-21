@@ -290,9 +290,9 @@ export default function Cart() {
     ({ item }: { item: CartItem }) => {
       const detailPath =
         item.productType === ProductType.COMBO
-          ? `/detail-combo/${item.productId}`
-          : `/detail/${item.productId}`;
-
+          ? `/device/ComboDetail?id=${item.productId}`
+          : `/device/DeviceDetail?id=${item.productId}`;
+// /device/ComboDetail?id=${item.id}
       return (
         <View
           className="flex-row items-center p-4 border-b"

@@ -379,7 +379,7 @@ export default function Profile() {
           <TouchableOpacity
             className="flex-row items-center p-4 rounded-lg mb-3"
             style={{ backgroundColor: colors.card, ...shadowStyle }}
-            onPress={() => router.push('/order/OrderHistory')}
+            onPress={() => router.push('/order/HistoryOrders')}
             activeOpacity={0.7}
           >
             <Ionicons name="cart-outline" size={24} color={colors.textColer} />

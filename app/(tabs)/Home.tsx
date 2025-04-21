@@ -1,4 +1,4 @@
-import { useEffect, useState, memo, useCallback } from 'react';
+import { useEffect, useState, memo, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Dimensions,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -27,6 +28,7 @@ import {
 import { ProductType } from '@/constants/ProductType';
 import DeviceItem from '@/components/DeviceItem';
 import ComboItem from '@/components/ComboItem';
+import Toast from 'react-native-toast-message';
 
 // Define TypeScript interfaces
 interface Slide {
@@ -61,14 +63,40 @@ const FLASH_SALE_ITEMS: Item[] = Array.from({ length: 10 }, (_, i) => ({
 }));
 
 // Reusable Components with Types
-const SlideItem = memo<{ image: string }>(({ image }) => (
-  <Image source={{ uri: image }} style={styles.slideImage} resizeMode="cover" />
-));
+const SlideItem = memo<{ image: string; index: number; colors: ThemeColors }>(({ image, index, colors }) => {
+  const [imageLoading, setImageLoading] = useState(true);
+  return (
+    <View style={styles.slideContainer}>
+      {imageLoading && (
+        <View style={[styles.imagePlaceholder, { backgroundColor: colors.mutedForeground }]}>
+          <ActivityIndicator size="small" color={colors.primary} />
+        </View>
+      )}
+      <Image
+        source={{ uri: image, cache: 'force-cache' }}
+        style={styles.slideImage}
+        resizeMode="cover"
+        onLoad={() => setImageLoading(false)}
+        onError={() => setImageLoading(false)}
+      />
+    </View>
+  );
+});
 
 const FlashSaleItem = memo<{ item: Item; colors: ThemeColors }>(({ item, colors }) => (
   <View style={[styles.card, { backgroundColor: colors.card }]}>
-    <Image source={{ uri: item.image }} style={styles.cardImage} resizeMode="cover" />
-    <Text style={[styles.cardTitle, { color: colors.foreground }]}>{item.name}</Text>
+    <Image
+      source={{ uri: item.image, cache: 'force-cache' }}
+      style={styles.cardImage}
+      resizeMode="cover"
+    />
+    <Text
+      style={[styles.cardTitle, { color: colors.foreground }]}
+      numberOfLines={1}
+      ellipsizeMode="tail"
+    >
+      {item.name}
+    </Text>
     <Text style={{ color: colors.destructive }}>${item.price}</Text>
     <View style={styles.cardFooter}>
       <Ionicons name="star" size={16} color="#FFD700" />
@@ -81,72 +109,101 @@ const FlashSaleItem = memo<{ item: Item; colors: ThemeColors }>(({ item, colors 
 ));
 
 const CategoryItem = memo<{ item: MaterialCategory; colors: ThemeColors }>(({ item, colors }) => (
-  <TouchableOpacity style={[styles.categoryButton, { borderColor: colors.border }]}>
-    <Text style={[styles.categoryText, { color: colors.foreground }]}>{item.label}</Text>
+  <TouchableOpacity
+    style={[
+      styles.categoryButton,
+      {
+        backgroundColor: '#FFFFFF', 
+        borderColor: '#000000', 
+        borderWidth: 1,
+      },
+    ]}
+  >
+    <Text
+      style={[styles.categoryText, { color: colors.foreground }]}
+      numberOfLines={1}
+      ellipsizeMode="tail"
+    >
+      {item.label}
+    </Text>
   </TouchableOpacity>
 ));
+
+// Skeleton Loader for Devices/Combos
+const SkeletonItem = memo<{ colors: ThemeColors }>(({ colors }) => (
+  <View style={[styles.card, { backgroundColor: colors.card, width: '45%' }]}>
+    <View style={[styles.cardImage, { backgroundColor: colors.mutedForeground }]} />
+    <View style={{ height: 16, width: '80%', backgroundColor: colors.mutedForeground, borderRadius: 4, marginVertical: 4 }} />
+    <View style={{ height: 16, width: '50%', backgroundColor: colors.mutedForeground, borderRadius: 4 }} />
+  </View>
+));
+
+const showToast = (type: 'success' | 'error' | 'info', message: string, description?: string) => {
+  Toast.show({
+    type,
+    text1: message,
+    text2: description || '',
+    position: 'top',
+    visibilityTime: 3000,
+    topOffset: 50,
+    text1Style: { fontSize: 16, fontWeight: 'bold', color: '#333333' },
+    text2Style: { fontSize: 14, color: '#333333' },
+  });
+};
 
 export default function Home() {
   const router = useRouter();
   const { colors } = useThemeColors();
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(24 * 60 * 60); 
+  const [timeLeft, setTimeLeft] = useState(24 * 60 * 60);
   const [categories, setCategories] = useState<MaterialCategory[]>([]);
   const [devices, setDevices] = useState<IotDevice[]>([]);
   const [combos, setCombos] = useState<Combo[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [loadingDevices, setLoadingDevices] = useState(false);
   const [loadingCombos, setLoadingCombos] = useState(false);
-  const [errorCategories, setErrorCategories] = useState<string | null>(null);
-  const [errorDevices, setErrorDevices] = useState<string | null>(null);
-  const [errorCombos, setErrorCombos] = useState<string | null>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   // Memoized fetchData function
   const fetchData = useCallback(async () => {
-    // Fetch Material Categories
-    setLoadingCategories(true);
-    setErrorCategories(null);
     try {
+      setLoadingCategories(true);
       const categoriesData = await getMaterialCategories();
       setCategories(categoriesData);
     } catch (err: any) {
-      setErrorCategories(err.message || 'Failed to load categories.');
+      showToast('error', 'Error', err.message || 'Failed to load categories.');
     } finally {
       setLoadingCategories(false);
     }
 
-    // Fetch IotDevices
-    setLoadingDevices(true);
-    setErrorDevices(null);
     try {
+      setLoadingDevices(true);
       const deviceParams: PaginationParams = {
         pageIndex: 0,
-        pageSize: 8, 
+        pageSize: 8,
         searchKeyword: '',
         deviceTypeFilter: ProductType.DEVICE,
       };
       const devicesData = await getIotDevices(deviceParams);
       setDevices(devicesData.data);
     } catch (err: any) {
-      setErrorDevices(err.message || 'Failed to load devices.');
+      showToast('error', 'Error', err.message || 'Failed to load devices.');
     } finally {
       setLoadingDevices(false);
     }
 
-    // Fetch Combos
-    setLoadingCombos(true);
-    setErrorCombos(null);
     try {
+      setLoadingCombos(true);
       const comboParams: PaginationParams = {
         pageIndex: 0,
-        pageSize: 4, // Lấy 4 combo
+        pageSize: 4,
         searchKeyword: '',
         deviceTypeFilter: ProductType.COMBO,
       };
       const combosData = await getCombos(comboParams);
       setCombos(combosData.data);
     } catch (err: any) {
-      setErrorCombos(err.message || 'Failed to load combos.');
+      showToast('error', 'Error', err.message || 'Failed to load combos.');
     } finally {
       setLoadingCombos(false);
     }
@@ -168,20 +225,19 @@ export default function Home() {
     };
   }, [fetchData]);
 
-  const formatTime = (seconds: number): string => {
+  const formatTime = useCallback((seconds: number): string => {
     const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
     const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
     const s = (seconds % 60).toString().padStart(2, '0');
     return `${h}:${m}:${s}`;
-  };
+  }, []);
 
-  // Debounced handler for slider scroll
   const handleMomentumScrollEnd = useCallback((e: any) => {
-    const index = Math.round(e.nativeEvent.contentOffset.x / Dimensions.get('window').width);
+    const index = Math.round(e.nativeEvent.contentOffset.x / (Dimensions.get('window').width - 32));
     setCurrentSlide(index);
   }, []);
 
-  // getItemLayout for FlatLists
+  // Optimized getItemLayout
   const slideItemLayout = useCallback(
     (_: any, index: number) => ({
       length: Dimensions.get('window').width - 32,
@@ -193,7 +249,7 @@ export default function Home() {
 
   const flashSaleItemLayout = useCallback(
     (_: any, index: number) => ({
-      length: 136, // card width (120) + marginRight (12) + padding (4)
+      length: 136,
       offset: 136 * index,
       index,
     }),
@@ -202,17 +258,122 @@ export default function Home() {
 
   const categoryItemLayout = useCallback(
     (_: any, index: number) => ({
-      length: 100, // Approximate width of category button
+      length: 100,
       offset: 100 * index,
       index,
     }),
     []
   );
 
+  // Key extractors
+  const slideKeyExtractor = useCallback((item: Slide) => item.id, []);
+  const flashSaleKeyExtractor = useCallback((item: Item) => item.id, []);
+  const categoryKeyExtractor = useCallback((item: MaterialCategory) => item.id.toString(), []);
+  const deviceKeyExtractor = useCallback((item: IotDevice, index: number) => `${item.id}-${index}`, []);
+  const comboKeyExtractor = useCallback((item: Combo, index: number) => `${item.id}-${index}`, []);
+
+  const CategoryItem = memo<{ item: MaterialCategory; colors: ThemeColors }>(({ item, colors }) => (
+    <TouchableOpacity
+      style={[
+        styles.categoryButton,
+        {
+          backgroundColor: '#FFFFFF', 
+          borderColor: '#000000', 
+          borderWidth: 1,
+        },
+      ]}
+    >
+      <Text
+        style={[styles.categoryText, { color: colors.foreground }]}
+        numberOfLines={1}
+        ellipsizeMode="tail"
+      >
+        {item.label}
+      </Text>
+    </TouchableOpacity>
+  ));
+  
+  // Skeleton Loader for Categories
+  const SkeletonCategoryItem = memo<{ colors: ThemeColors }>(({ colors }) => (
+    <View
+      style={[
+        styles.categoryButton,
+        {
+          backgroundColor: colors.mutedForeground,
+          borderColor: colors.mutedForeground,
+          borderWidth: 1,
+          width: 100,
+        },
+      ]}
+    >
+      <View style={{ height: 16, width: '80%', backgroundColor: colors.background, borderRadius: 4 }} />
+    </View>
+  ));
+
+  // Render items
+  const renderSlideItem = useCallback(
+    ({ item, index }: { item: Slide; index: number }) => (
+      <SlideItem image={item.image} index={index} colors={colors} />
+    ),
+    [colors]
+  );
+
+  const renderFlashSaleItem = useCallback(
+    ({ item }: { item: Item }) => <FlashSaleItem item={item} colors={colors} />,
+    [colors]
+  );
+
+  const renderDeviceItem = useCallback(
+    ({ item, index }: { item: IotDevice; index: number }) =>
+      loadingDevices ? (
+        <SkeletonItem colors={colors} />
+      ) : (
+        <DeviceItem item={item} colors={colors} router={router} />
+      ),
+    [colors, loadingDevices, router]
+  );
+
+  const renderComboItem = useCallback(
+    ({ item, index }: { item: Combo; index: number }) =>
+      loadingCombos ? (
+        <SkeletonItem colors={colors} />
+      ) : (
+        <ComboItem item={item} colors={colors} router={router} />
+      ),
+    [colors, loadingCombos, router]
+  );
+  const renderCategoryItem = useCallback(
+    ({ item }: { item: MaterialCategory }) => <CategoryItem item={item} colors={colors} />,
+    [colors]
+  );
+  
+  const renderSkeletonCategoryItem = useCallback(
+    ({ item, index }: { item: any; index: number }) => <SkeletonCategoryItem colors={colors} key={`skeleton-cat-${index}`} />,
+    [colors]
+  );
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { backgroundColor: colors.headerBg }]}>
-        <Text style={styles.headerText}>Discover</Text>
+    <View style={styles.container}>
+      {/* Sticky Header */}
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: colors.headerBg,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1000,
+            elevation: 5,
+            shadowColor: '#000',
+            shadowOpacity: 0.2,
+            shadowRadius: 4,
+            shadowOffset: { width: 0, height: 2 },
+            paddingTop: Platform.OS === 'ios' ? 40 : 20, 
+          },
+        ]}
+      >
+        <Text style={styles.headerText}>IoTS</Text>
         <TouchableOpacity
           onPress={() => router.push('/cart/Cart')}
           accessibilityLabel="Go to cart"
@@ -223,130 +384,144 @@ export default function Home() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.sliderContainer}>
-        <FlatList
-          data={SLIDES}
-          renderItem={({ item }) => <SlideItem image={item.image} />}
-          keyExtractor={(item) => item.id}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onMomentumScrollEnd={handleMomentumScrollEnd}
-          getItemLayout={slideItemLayout}
-          initialNumToRender={1}
-          windowSize={3}
-        />
-        <View style={styles.dotsContainer}>
-          {SLIDES.map((_, index) => (
-            <View
-              key={index}
-              style={[styles.dot, { backgroundColor: index === currentSlide ? colors.textColer : colors.muted }]}
-            />
-          ))}
-        </View>
-      </View>
-
-      <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color={colors.mutedForeground} style={styles.searchIcon} />
-        <TextInput
-          placeholder="Search products..."
-          placeholderTextColor={colors.mutedForeground}
-          style={[styles.searchInput, { backgroundColor: colors.input, color: colors.foreground }]}
-        />
-      </View>
-
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Flash Sale</Text>
-          <Text style={{ color: colors.destructive }}>{formatTime(timeLeft)}</Text>
-        </View>
-        <FlatList
-          data={FLASH_SALE_ITEMS}
-          renderItem={({ item }) => <FlashSaleItem item={item} colors={colors} />}
-          keyExtractor={(item) => item.id}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          getItemLayout={flashSaleItemLayout}
-          initialNumToRender={5}
-          windowSize={5}
-        />
-      </View>
-
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Categories</Text>
-          <TouchableOpacity>
-            <Text style={{ color: colors.textColer }}>See All</Text>
-          </TouchableOpacity>
-        </View>
-        {loadingCategories ? (
-          <ActivityIndicator size="small" color={colors.primary} />
-        ) : errorCategories ? (
-          <Text style={{ color: colors.destructive }}>{errorCategories}</Text>
-        ) : (
+      {/* Scrollable Content */}
+      <ScrollView
+        ref={scrollViewRef}
+        style={{ flex: 1, marginTop: 80 }} 
+        contentContainerStyle={{ paddingBottom: 20 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.sliderContainer}>
           <FlatList
-            data={categories}
-            renderItem={({ item }) => <CategoryItem item={item} colors={colors} />}
-            keyExtractor={(item) => item.id.toString()}
+            data={SLIDES}
+            renderItem={renderSlideItem}
+            keyExtractor={slideKeyExtractor}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={handleMomentumScrollEnd}
+            getItemLayout={slideItemLayout}
+            initialNumToRender={1}
+            windowSize={3}
+            removeClippedSubviews
+          />
+          <View style={styles.dotsContainer}>
+            {SLIDES.map((_, index) => (
+              <View
+                key={index}
+                style={[styles.dot, { backgroundColor: index === currentSlide ? colors.textColer : colors.muted }]}
+              />
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.searchContainer}>
+          <Ionicons name="search" size={20} color={colors.mutedForeground} style={styles.searchIcon} />
+          <TextInput
+            placeholder="Search products..."
+            placeholderTextColor={colors.mutedForeground}
+            style={[styles.searchInput, { backgroundColor: colors.input, color: colors.foreground }]}
+            accessibilityLabel="Search products"
+          />
+        </View>
+
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Flash Sale</Text>
+            <Text style={{ color: colors.destructive }}>{formatTime(timeLeft)}</Text>
+          </View>
+          <FlatList
+            data={FLASH_SALE_ITEMS}
+            renderItem={renderFlashSaleItem}
+            keyExtractor={flashSaleKeyExtractor}
             horizontal
             showsHorizontalScrollIndicator={false}
-            getItemLayout={categoryItemLayout}
+            getItemLayout={flashSaleItemLayout}
             initialNumToRender={5}
             windowSize={5}
+            removeClippedSubviews
           />
-        )}
-      </View>
-
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Devices</Text>
-          <TouchableOpacity onPress={() => router.push('/device/DeviceList')}>
-            <Text style={{ color: colors.textColer }}>See All</Text>
-          </TouchableOpacity>
         </View>
-        {loadingDevices ? (
-          <ActivityIndicator size="small" color={colors.primary} />
-        ) : errorDevices ? (
-          <Text style={{ color: colors.destructive }}>{errorDevices}</Text>
-        ) : (
+
+        <View style={styles.section}>
+  <View style={styles.sectionHeader}>
+    <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Categories</Text>
+    {/* <TouchableOpacity onPress={() => router.push('/categories')}>
+      <Text style={{ color: colors.textColer, fontSize: 14, fontWeight: '600' }}>See All</Text>
+    </TouchableOpacity> */}
+  </View>
+  {loadingCategories ? (
+    <FlatList
+      data={Array(5).fill({ id: 'skeleton' })}
+      renderItem={renderSkeletonCategoryItem}
+      keyExtractor={(item, index) => `skeleton-cat-${index}`}
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      getItemLayout={categoryItemLayout}
+      initialNumToRender={5}
+      windowSize={5}
+      removeClippedSubviews
+    />
+  ) : categories.length === 0 ? (
+    <Text style={{ color: colors.mutedForeground, fontSize: 14, paddingHorizontal: 8 }}>
+      No categories available.
+    </Text>
+  ) : (
+    <FlatList
+      data={categories}
+      renderItem={renderCategoryItem}
+      keyExtractor={categoryKeyExtractor}
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      getItemLayout={categoryItemLayout}
+      initialNumToRender={5}
+      windowSize={5}
+      removeClippedSubviews
+    />
+  )}
+</View>
+
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Devices</Text>
+            <TouchableOpacity onPress={() => router.push('/device/DeviceList')}>
+              <Text style={{ color: colors.textColer }}>See All</Text>
+            </TouchableOpacity>
+          </View>
           <FlatList
-            data={devices}
-            renderItem={({ item }) => <DeviceItem item={item} colors={colors} router={router} />}
-            keyExtractor={(item) => item.id.toString()}
+            data={loadingDevices ? Array(4).fill({ id: 'skeleton' }) : devices}
+            renderItem={renderDeviceItem}
+            keyExtractor={deviceKeyExtractor}
             numColumns={2}
             scrollEnabled={false}
             columnWrapperStyle={styles.columnWrapper}
             initialNumToRender={4}
             windowSize={5}
+            removeClippedSubviews
           />
-        )}
-      </View>
-
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Combos</Text>
-          <TouchableOpacity onPress={() => router.push('/device/ComboList')}>
-            <Text style={{ color: colors.textColer }}>See All</Text>
-          </TouchableOpacity>
         </View>
-        {loadingCombos ? (
-          <ActivityIndicator size="small" color={colors.primary} />
-        ) : errorCombos ? (
-          <Text style={{ color: colors.destructive }}>{errorCombos}</Text>
-        ) : (
+
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Combos</Text>
+            <TouchableOpacity onPress={() => router.push('/device/ComboList')}>
+              <Text style={{ color: colors.textColer }}>See All</Text>
+            </TouchableOpacity>
+          </View>
           <FlatList
-            data={combos}
-            renderItem={({ item }) => <ComboItem item={item} colors={colors} router={router} />}
-            keyExtractor={(item) => item.id.toString()}
+            data={loadingCombos ? Array(4).fill({ id: 'skeleton' }) : combos}
+            renderItem={renderComboItem}
+            keyExtractor={comboKeyExtractor}
             numColumns={2}
             scrollEnabled={false}
             columnWrapperStyle={styles.columnWrapper}
             initialNumToRender={4}
             windowSize={5}
+            removeClippedSubviews
           />
-        )}
-      </View>
-    </ScrollView>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -356,12 +531,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   headerText: { fontSize: 24, fontWeight: 'bold', color: '#fff' },
   cartButton: { backgroundColor: '#fff', borderRadius: 20, padding: 8 },
   sliderContainer: { paddingHorizontal: 16, marginTop: 16 },
-  slideImage: { width: Dimensions.get('window').width - 32, height: 160, borderRadius: 12 },
+  slideContainer: { width: Dimensions.get('window').width - 32, height: 160 },
+  slideImage: { width: '100%', height: 160, borderRadius: 12 },
+  imagePlaceholder: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   dotsContainer: { flexDirection: 'row', justifyContent: 'center', marginTop: 8 },
   dot: { width: 8, height: 8, borderRadius: 4, marginHorizontal: 4 },
   searchContainer: {
@@ -395,13 +580,18 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 14, fontWeight: '600', marginVertical: 4 },
   cardFooter: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
   cartIcon: { marginLeft: 'auto' },
+
   categoryButton: {
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    borderRadius: 12, // Softer corners
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     marginRight: 8,
+    elevation: 2, // Subtle shadow for card effect
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 1 },
   },
   categoryText: { fontSize: 14 },
-  columnWrapper: { justifyContent: 'space-between' },
+  columnWrapper: { justifyContent: 'space-between', paddingHorizontal: 8 },
 });
