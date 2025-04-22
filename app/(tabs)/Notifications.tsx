@@ -1,48 +1,107 @@
-import { View, Text, FlatList, TouchableOpacity } from 'react-native';
+import { useState, useEffect, useCallback } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useThemeColors } from '@/hooks/useThemeColors';
+import Toast from 'react-native-toast-message';
+import { fetchAllNotifications, Notification } from '@/services/slices/notificationApi';
+import { formatDistanceToNow } from 'date-fns';
 
-const notifications = [
-  { id: '1', message: 'Your order #1234 has been shipped!', time: '2h ago', icon: 'cart' },
-  { id: '2', message: 'New blog post: "Top IoT Devices"', time: '5h ago', icon: 'book' },
-  { id: '3', message: 'Your warranty request has been approved.', time: '1d ago', icon: 'shield-checkmark' },
-];
+// Utility to map entityType to an icon
+const getIconForEntityType = (entityType: number): keyof typeof Ionicons.glyphMap => {
+  switch (entityType) {
+    case 9: // Order-related notification
+      return 'cart';
+    default:
+      return 'notifications';
+  }
+};
 
 export default function Notifications() {
   const { colors } = useThemeColors();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const renderNotification = ({ item }: { item: { id: string; message: string; time: string; icon: string } }) => (
+  // Fetch notifications
+  const fetchNotifications = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await fetchAllNotifications();
+      setNotifications(response.data || []);
+    } catch (err: any) {
+      showToast('error', 'Error', err.message || 'Failed to load notifications.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  const renderNotification = ({ item }: { item: Notification }) => (
     <TouchableOpacity
-      className="flex-row items-center p-4 border-b"
-      style={{ borderColor: colors.mutedForeground }} 
+      style={[styles.notificationItem, { borderColor: colors.mutedForeground }]}
     >
       <Ionicons
-        name={item.icon as keyof typeof Ionicons.glyphMap}
+        name={getIconForEntityType(item.entityType)}
         size={24}
-        color={colors.primary} 
-        className="mr-4"
+        color={colors.primary}
+        style={styles.icon}
       />
-      <View className="flex-1">
-        <Text className="text-sm" style={{ color: colors.foreground }}>
-          {item.message}
+      <View style={styles.content}>
+        <Text style={[styles.message, { color: item.isRead ? colors.mutedForeground : colors.foreground }]}>
+          {item.title}
         </Text>
-        <Text className="text-xs mt-1" style={{ color: colors.mutedForeground }}>
-          {item.time}
+        <Text style={[styles.time, { color: colors.mutedForeground }]}>
+          {formatDistanceToNow(new Date(item.createdDate), { addSuffix: true })}
         </Text>
       </View>
     </TouchableOpacity>
   );
 
   return (
-    <View className="flex-1" style={{ backgroundColor: colors.background }}>
-      <Text className="text-2xl font-bold p-4" style={{ color: colors.foreground }}>
-        Notifications
-      </Text>
-      <FlatList
-        data={notifications}
-        renderItem={renderNotification}
-        keyExtractor={(item) => item.id}
-      />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.header, { color: colors.foreground }]}>Notifications</Text>
+      {loading ? (
+        <Text style={[styles.loading, { color: colors.mutedForeground }]}>Loading...</Text>
+      ) : notifications.length === 0 ? (
+        <Text style={[styles.empty, { color: colors.mutedForeground }]}>No notifications available.</Text>
+      ) : (
+        <FlatList
+          data={notifications}
+          renderItem={renderNotification}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.listContent}
+        />
+      )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  header: { fontSize: 24, fontWeight: '700', padding: 16 },
+  loading: { fontSize: 16, textAlign: 'center', marginTop: 16 },
+  empty: { fontSize: 16, textAlign: 'center', marginTop: 16 },
+  listContent: { paddingBottom: 16 },
+  notificationItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+  },
+  icon: { marginRight: 16 },
+  content: { flex: 1 },
+  message: { fontSize: 14, fontWeight: '500' },
+  time: { fontSize: 12, marginTop: 4 },
+});
+
+const showToast = (type: string, title: string, message: string) => {
+  Toast.show({
+    type,
+    text1: title,
+    text2: message,
+    position: 'top',
+    visibilityTime: 4000,
+  });
+};
