@@ -5,19 +5,20 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "fe-capstone-iots-mobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "jsEngine": "hermes",
     "ios": {
       "supportsTablet": true,
-       "jsEngine": "jsc"
+      "jsEngine": "jsc"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.lucoder.FE_Capstone_IoTS_Mobile"
     },
     "web": {
       "bundler": "metro",
@@ -38,6 +39,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "ff0ec85e-1e1d-4c68-a677-552f48d1fad2"
+      }
     }
   }
 }
