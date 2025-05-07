@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import Toast from "react-native-toast-message";
 import {
   View,
   Text,
@@ -30,7 +31,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 // Interface for lab data
 interface Lab {
-  id: string;
+  id: number;
   title: string;
   summary: string;
   price: number;
@@ -48,26 +49,34 @@ export default function ComboDetail() {
   const [feedback, setFeedback] = useState<any[]>([]);
   const [relatedCombos, setRelatedCombos] = useState<Combo[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
   const [numCart, setNumCart] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [addingLabId, setAddingLabId] = useState<string | null>(null);
+  // const [addingLabId, setAddingLabId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("details");
+  const [addingLabId, setAddingLabId] = useState<number | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!comboId) {
-      setError("No combo ID provided.");
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "No combo ID provided",
+      });
       return;
     }
     const numericComboId = parseInt(comboId as string, 10);
     if (isNaN(numericComboId)) {
-      setError("Invalid combo ID.");
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Invalid combo ID",
+      });
       return;
     }
     setLoading(true);
-    setError(null);
 
     try {
       // Fetch combo details
@@ -75,22 +84,13 @@ export default function ComboDetail() {
       console.log("Combo Response:", comboResponse);
       setSelectedCombo(comboResponse);
 
-      // Fetch labs
-      const labParams: PaginationParams = {
+      const labResponse = await fetchLabMemberPagination({
+        comboId: numericComboId,
         pageIndex: 0,
         pageSize: 10,
         searchKeyword: "",
-      };
-      // const numericComboId = parseInt(comboId as string, 10);
-      // if (isNaN(numericComboId)) {
-      //   throw new Error("Invalid combo ID.");
-      // }
-
-      const labResponse = await fetchLabMemberPagination({
-        comboId: numericComboId,
-        ...labParams,
       });
-      setLabs(labResponse.data || []);
+      setLabs(labResponse.data.data || []);
       console.log("Labs Response:", labResponse.data);
 
       // Fetch feedback
@@ -106,7 +106,8 @@ export default function ComboDetail() {
           searchKeyword: "",
         },
       });
-      setFeedback(feedbackResponse || []);
+      // setFeedback(feedbackResponse || []);
+      setFeedback(feedbackResponse.data.data || []);
 
       // Fetch related combos
       const combosResponse = await getCombos({
@@ -117,7 +118,11 @@ export default function ComboDetail() {
       });
       setRelatedCombos(combosResponse.data || []);
     } catch (err: any) {
-      setError(err.message || "Failed to load combo details.");
+      Toast.show({
+        type: "error",
+        text1: "Loading failed",
+        text2: err.message || "Failed to load combo details",
+      });
       console.error("Fetch Error:", err);
     } finally {
       setLoading(false);
@@ -131,7 +136,11 @@ export default function ComboDetail() {
   const onChangeQuantity = useCallback(
     (value: number) => {
       if (value > (selectedCombo?.quantity || 0)) {
-        alert(`Only ${selectedCombo?.quantity} items available`);
+        Toast.show({
+          type: "info",
+          text1: "Quantity limit",
+          text2: `Only ${selectedCombo?.quantity} items available`,
+        });
         setNumCart(selectedCombo?.quantity || 1);
         return;
       }
@@ -142,12 +151,20 @@ export default function ComboDetail() {
 
   const handleAddToCart = useCallback(async () => {
     if (!selectedCombo?.quantity) {
-      alert("Combo is out of stock.");
+      Toast.show({
+        type: "error",
+        text1: "Out of stock",
+        text2: "This combo is currently unavailable",
+      });
       return;
     }
     const numericComboId = parseInt(comboId as string, 10);
     if (isNaN(numericComboId)) {
-      alert("Invalid combo ID.");
+      Toast.show({
+        type: "error",
+        text1: "Invalid combo",
+        text2: "The combo ID is not valid",
+      });
       return;
     }
     try {
@@ -157,53 +174,42 @@ export default function ComboDetail() {
         productType: ProductType.COMBO,
         quantity: numCart,
       });
-      alert("Combo added to cart successfully!");
+      Toast.show({
+        type: "success",
+        text1: "Added to cart",
+        text2: `Combo added to cart successfully!`,
+      });
     } catch (error: any) {
-      alert(`Error adding to cart: ${error.message}`);
+      Toast.show({
+        type: "error",
+        text1: "Failed to add to cart",
+        text2: error || "Please try again later",
+      });
     } finally {
       setIsAdding(false);
     }
-  }, [comboId, numCart, selectedCombo]);
+  }, [comboId, numCart, selectedCombo, fetchData]);
 
-  const handleBuyNow = useCallback(async () => {
-    if (!selectedCombo?.quantity) {
-      alert("The product is out of stock.");
-      return;
-    }
-    const numericComboId = parseInt(comboId as string, 10);
-    if (isNaN(numericComboId)) {
-      alert("Invalid combo ID.");
-      return;
-    }
-    try {
-      await addToCart({
-        productId: numericComboId,
-        productType: ProductType.COMBO,
-        quantity: numCart,
-      });
-      router.push("/cart");
-    } catch (error: any) {
-      alert(`Error adding to cart: ${error.message}`);
-    }
-  }, [comboId, numCart, selectedCombo, router]);
-
-  const handleAddLabToCart = useCallback(async (labId: string) => {
+  const handleAddLabToCart = useCallback(async (labId: number) => {
     setAddingLabId(labId);
 
-    const numericLabId = parseInt(labId as string, 10);
-    if (isNaN(numericLabId)) {
-      alert("Invalid combo ID.");
-      return;
-    }
     try {
       await addToCart({
-        productId: numericLabId,
+        productId: labId,
         productType: ProductType.LAB,
         quantity: 1,
       });
-      alert("Lab added to cart successfully!");
+      Toast.show({
+        type: "success",
+        text1: "Lab added",
+        text2: "The lab has been added to your cart",
+      });
     } catch (error: any) {
-      alert(`Error: ${error.message}`);
+      Toast.show({
+        type: "warning",
+        text1: "Failed to add lab",
+        text2: error || "Please try again later",
+      });
     } finally {
       setAddingLabId(null);
     }
@@ -421,9 +427,7 @@ export default function ComboDetail() {
                     <Text className="text-gray-800 font-semibold">
                       {item.title}
                     </Text>
-                    <Text className="text-gray-600 text-sm">
-                      Summary: {item.summary}
-                    </Text>
+
                     <Text className="text-gray-600 text-sm">
                       Price: {item.price.toLocaleString("vi-VN")} VND
                     </Text>

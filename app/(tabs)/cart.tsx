@@ -1,5 +1,5 @@
 // app/(tabs)/cart.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,12 +7,11 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
   Modal,
-} from 'react-native';
-import { useThemeColors } from '../../hooks/useThemeColors';
-import { Link, useRouter } from 'expo-router';
-import { TrashIcon, PlusIcon, MinusIcon } from 'react-native-heroicons/outline';
+} from "react-native";
+import { useThemeColors } from "../../hooks/useThemeColors";
+import { Link, useRouter } from "expo-router";
+import { TrashIcon, PlusIcon, MinusIcon } from "react-native-heroicons/outline";
 import {
   fetchCarts,
   addToCart,
@@ -23,8 +22,8 @@ import {
   getCartTotalInformation,
   fetchComboIncludedLabs,
   ProductType,
-} from '../../services/slices/cartApi';
-import { CartItem, Lab, CartResponse, TotalInformation } from '@/types/cart';
+} from "../../services/slices/cartApi";
+import { CartItem, Lab, CartResponse, TotalInformation } from "@/types/cart";
 
 // Fallback icon component
 const FallbackIcon = () => null;
@@ -37,7 +36,8 @@ export default function Cart() {
   const router = useRouter();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
-  const [totalSelectedItemsPrice, setTotalSelectedItemsPrice] = useState<number>(0);
+  const [totalSelectedItemsPrice, setTotalSelectedItemsPrice] =
+    useState<number>(0);
   const [includedLabs, setIncludedLabs] = useState<Lab[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,7 +57,7 @@ export default function Cart() {
       const totalData: TotalInformation = await getCartTotalInformation();
       setTotalSelectedItemsPrice(totalData.totalSelectedItemsPrice);
     } catch (err: any) {
-      setError(err.message || 'Failed to load cart.');
+      setError(err.message || "Failed to load cart.");
     } finally {
       setLoading(false);
     }
@@ -119,10 +119,16 @@ export default function Cart() {
   };
 
   const formatPrice = (price: number): string => {
-    return new Intl.NumberFormat('vi-VN').format(price);
+    return new Intl.NumberFormat("vi-VN").format(price);
   };
 
-  const QuantityControl = ({ quantity, cartId }: { quantity: number; cartId: number }) => {
+  const QuantityControl = ({
+    quantity,
+    cartId,
+  }: {
+    quantity: number;
+    cartId: number;
+  }) => {
     const handleUpdateQuantity = async (newQuantity: number) => {
       try {
         await updateCartQuantity({ cartId, quantity: newQuantity });
@@ -177,7 +183,9 @@ export default function Cart() {
         >
           <View
             className={`w-6 h-6 rounded border-2 ${
-              item.isSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-400'
+              item.isSelected
+                ? "bg-blue-600 border-blue-600"
+                : "border-gray-400"
             }`}
           >
             {item.isSelected && (
@@ -186,7 +194,7 @@ export default function Cart() {
           </View>
         </TouchableOpacity>
         <Image
-          source={{ uri: item.imageUrl || 'https://via.placeholder.com/64' }}
+          source={{ uri: item.imageUrl || "https://via.placeholder.com/64" }}
           style={{ width: 64, height: 64, borderRadius: 8 }}
           resizeMode="cover"
         />
@@ -199,25 +207,32 @@ export default function Cart() {
               {item.productName}
             </Text>
           </Link>
-          <Text className="text-sm mt-1" style={{ color: colors.mutedForeground }}>
+          <Text
+            className="text-sm mt-1"
+            style={{ color: colors.mutedForeground }}
+          >
             Price: {formatPrice(item.price)} VND
           </Text>
           <Text className="text-sm" style={{ color: colors.mutedForeground }}>
             Total: {formatPrice(item.totalPrice)} VND
           </Text>
           <QuantityControl quantity={item.quantity} cartId={item.id} />
-          {item.productType === ProductType.COMBO && item.numberOfIncludedLabs > 0 && (
-            <TouchableOpacity
-              onPress={() => handleViewIncludedLabs(item.id)}
-              className="mt-2"
-            >
-              <Text className="text-sm text-blue-600">
-                View Included Labs ({item.numberOfIncludedLabs})
-              </Text>
-            </TouchableOpacity>
-          )}
+          {item.productType === ProductType.COMBO &&
+            item.numberOfIncludedLabs > 0 && (
+              <TouchableOpacity
+                onPress={() => handleViewIncludedLabs(item.id)}
+                className="mt-2"
+              >
+                <Text className="text-sm text-blue-600">
+                  View Included Labs ({item.numberOfIncludedLabs})
+                </Text>
+              </TouchableOpacity>
+            )}
         </View>
-        <TouchableOpacity onPress={() => handleDelete(item.id)} className="ml-4">
+        <TouchableOpacity
+          onPress={() => handleDelete(item.id)}
+          className="ml-4"
+        >
           <SafeTrashIcon size={24} color={colors.destructive} />
         </TouchableOpacity>
       </View>
@@ -230,12 +245,15 @@ export default function Cart() {
       style={{ borderColor: colors.border }}
     >
       <Image
-        source={{ uri: item.imageUrl || 'https://via.placeholder.com/48' }}
+        source={{ uri: item.imageUrl || "https://via.placeholder.com/48" }}
         style={{ width: 48, height: 48, borderRadius: 8 }}
         resizeMode="cover"
       />
       <View className="flex-1 ml-4">
-        <Text className="text-base font-medium" style={{ color: colors.foreground }}>
+        <Text
+          className="text-base font-medium"
+          style={{ color: colors.foreground }}
+        >
           {item.labName}
         </Text>
         <Text className="text-sm" style={{ color: colors.mutedForeground }}>
@@ -273,7 +291,10 @@ export default function Cart() {
         />
       ) : (
         <View className="flex-1 justify-center items-center">
-          <Text className="text-lg italic" style={{ color: colors.mutedForeground }}>
+          <Text
+            className="text-lg italic"
+            style={{ color: colors.mutedForeground }}
+          >
             Your cart is empty.
           </Text>
         </View>
@@ -299,13 +320,11 @@ export default function Cart() {
               </Text>
             </View>
             <TouchableOpacity
-              onPress={() => router.push('/(tabs)/checkout' as any)}
+              onPress={() => router.push("/(tabs)/checkout" as any)}
               className="flex-1 py-3 rounded-lg bg-blue-600"
               disabled={totalSelectedItemsPrice === 0}
             >
-              <Text
-                className="text-center text-base font-semibold text-white"
-              >
+              <Text className="text-center text-base font-semibold text-white">
                 Proceed to Checkout
               </Text>
             </TouchableOpacity>

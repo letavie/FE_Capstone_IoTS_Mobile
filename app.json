@@ -52,11 +52,12 @@
     },
     "extra": {
       "router": {
-        "origin": false
+        "origin": "fe-capstone-iots-mobile://"
       },
       "eas": {
-        "projectId": "ff0ec85e-1e1d-4c68-a677-552f48d1fad2"
+        "projectId": "3f644a27-e3fa-40fd-a249-b91b735e2d86"
       }
-    }
+    },
+    "owner": "lucoder"
   }
 }
