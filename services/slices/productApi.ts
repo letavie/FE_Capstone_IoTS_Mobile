@@ -1,4 +1,13 @@
-import api from './../api/apiConfig';
+import api from "./../api/apiConfig";
+
+// Hàm tiện ích để chuyển đổi ID từ string sang number
+export const parseNumericId = (id: string): number => {
+  const numericId = parseInt(id, 10);
+  if (isNaN(numericId)) {
+    throw new Error(`Invalid numeric ID: ${id}`);
+  }
+  return numericId;
+};
 
 // Định nghĩa các kiểu dữ liệu (Types)
 export interface PaginationParams {
@@ -8,7 +17,7 @@ export interface PaginationParams {
   storeFilterId?: number;
   categoryFilterId?: number;
   deviceTypeFilter?: number | null; // Optional for broader filtering
-  sortBy?: 'priceAsc' | 'priceDesc' | 'rating' | null; // New sort field
+  sortBy?: "priceAsc" | "priceDesc" | "rating" | null; // New sort field
 }
 
 export interface IotDevice {
@@ -115,11 +124,18 @@ export interface Combo {
   updateDate: string;
   createdBy: number;
   updatedBy: number;
-  description: string; 
-  specifications: string; 
-  notes: string; 
+  description: string;
+  specifications: string;
+  notes: string;
   attachmentsList: { id: number; imageUrl: string; metaData: string }[];
-  deviceComboList: { deviceName: string; deviceSummary: string; amount: number; imageUrl: string; iotDeviceId: number; originalPrice: number }[];
+  deviceComboList: {
+    deviceName: string;
+    deviceSummary: string;
+    amount: number;
+    imageUrl: string;
+    iotDeviceId: number;
+    originalPrice: number;
+  }[];
   rating: number;
   isActive: number;
 }
@@ -205,41 +221,68 @@ interface PaginatedResponse<T> {
 }
 
 // API để lấy danh sách IotDevice với phân trang
-export const getIotDevices = async (params: PaginationParams): Promise<PaginatedResponse<IotDevice>> => {
-  const response = await api.post<ApiResponse<PaginatedResponse<IotDevice>>>('/api/iot-device/get-pagination', params);
+export const getIotDevices = async (
+  params: PaginationParams
+): Promise<PaginatedResponse<IotDevice>> => {
+  const response = await api.post<ApiResponse<PaginatedResponse<IotDevice>>>(
+    "/api/iot-device/get-pagination",
+    params
+  );
   return response.data.data;
 };
 
 // API để lấy chi tiết IotDevice theo ID
-export const getIotDeviceDetails = async (id: number): Promise<IotDeviceDetail> => {
-  const response = await api.get<ApiResponse<IotDeviceDetail>>(`/api/iot-device/get-iot-device-details-by-id/${id}`);
+export const getIotDeviceDetails = async (
+  id: number
+): Promise<IotDeviceDetail> => {
+  const response = await api.get<ApiResponse<IotDeviceDetail>>(
+    `/api/iot-device/get-iot-device-details-by-id/${id}`
+  );
   return response.data.data;
 };
 
 // API để lấy danh sách Combo với phân trang
-export const getCombos = async (params: PaginationParams): Promise<PaginatedResponse<Combo>> => {
-  const response = await api.post<ApiResponse<PaginatedResponse<Combo>>>('/api/combo/get-pagination', params);
+export const getCombos = async (
+  params: PaginationParams
+): Promise<PaginatedResponse<Combo>> => {
+  const response = await api.post<ApiResponse<PaginatedResponse<Combo>>>(
+    "/api/combo/get-pagination",
+    params
+  );
   return response.data.data;
 };
 
 // API để lấy chi tiết Combo theo ID
-export const getComboDetails = async (comboId: number): Promise<ComboDetail> => {
-  const response = await api.get<ApiResponse<ComboDetail>>(`/api/combo/get-combo-details/${comboId}`);
+export const getComboDetails = async (
+  comboId: number
+): Promise<ComboDetail> => {
+  const response = await api.get<ApiResponse<ComboDetail>>(
+    `/api/combo/get-combo-details/${comboId}`
+  );
   return response.data.data;
 };
 
 // API để lấy danh sách MaterialCategory
 export const getMaterialCategories = async (): Promise<MaterialCategory[]> => {
-  const response = await api.get<ApiResponse<MaterialCategory[]>>('/api/material-category/get-all-material-categories');
+  const response = await api.get<ApiResponse<MaterialCategory[]>>(
+    "/api/material-category/get-all-material-categories"
+  );
   return response.data.data;
 };
 
-export const addToCart = async (data: { productId: string; productType: number; quantity: number }) => {
-    const response = await api.post(`/api/cart/add-to-cart`, data);
-    return response.data;
-  };
+export const addToCart = async (data: {
+  productId: number;
+  productType: number;
+  quantity: number;
+}) => {
+  const response = await api.post(`/api/cart/add-to-cart`, data);
+  return response.data;
+};
 
-  export const getFeedbackHistory = async (params: any) => {
-    const response = await api.post(`/api/feedback/product/get-pagination`, params);
-    return response.data;
-  };
+export const getFeedbackHistory = async (params: any) => {
+  const response = await api.post(
+    `/api/feedback/product/get-pagination`,
+    params
+  );
+  return response.data;
+};
