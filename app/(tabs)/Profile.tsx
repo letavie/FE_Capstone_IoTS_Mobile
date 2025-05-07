@@ -132,7 +132,7 @@
 //   );
 // }
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -143,11 +143,11 @@ import {
   Alert,
   Switch,
   SafeAreaView,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useThemeColors } from '@/hooks/useThemeColors';
-import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useThemeColors } from "@/hooks/useThemeColors";
+import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface UserProfile {
   id: number;
@@ -169,7 +169,7 @@ export default function Profile() {
   const [logoutLoading, setLogoutLoading] = useState(false);
 
   const shadowStyle = {
-    shadowColor: theme === 'light' ? '#000' : '#fff',
+    shadowColor: theme === "light" ? "#000" : "#fff",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
@@ -181,8 +181,8 @@ export default function Profile() {
     const checkLoginState = async () => {
       setLoading(true);
       try {
-        const token = await AsyncStorage.getItem('token');
-        const userData = await AsyncStorage.getItem('user');
+        const token = await AsyncStorage.getItem("token");
+        const userData = await AsyncStorage.getItem("user");
         if (token && userData) {
           setIsLoggedIn(true);
           setUser(JSON.parse(userData));
@@ -191,7 +191,7 @@ export default function Profile() {
           setUser(null);
         }
       } catch (error) {
-        console.error('Error checking login state:', error);
+        console.error("Error checking login state:", error);
         setIsLoggedIn(false);
         setUser(null);
       } finally {
@@ -203,13 +203,13 @@ export default function Profile() {
 
   const handleLogout = async () => {
     Alert.alert(
-      'Log Out',
-      'Are you sure you want to log out?',
+      "Log Out",
+      "Are you sure you want to log out?",
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Log Out',
-          style: 'destructive',
+          text: "Log Out",
+          style: "destructive",
           onPress: async () => {
             setLogoutLoading(true);
             try {
@@ -217,7 +217,7 @@ export default function Profile() {
               setIsLoggedIn(false);
               setUser(null);
             } catch (error) {
-              Alert.alert('Error', 'Failed to log out. Please try again.');
+              Alert.alert("Error", "Failed to log out. Please try again.");
             } finally {
               setLogoutLoading(false);
             }
@@ -260,7 +260,11 @@ export default function Profile() {
               {logoutLoading ? (
                 <ActivityIndicator size="small" color={colors.primary} />
               ) : (
-                <Ionicons name="log-out-outline" size={28} color={colors.primary} />
+                <Ionicons
+                  name="log-out-outline"
+                  size={28}
+                  color={colors.primary}
+                />
               )}
             </TouchableOpacity>
           )}
@@ -275,37 +279,67 @@ export default function Profile() {
             <>
               <View className="flex-row items-center">
                 <Image
-                  source={require('../../assets/images/logo3.png')}
+                  source={require("../../assets/images/logo3.png")}
                   className="w-20 h-20 rounded-full border-2"
                   style={{ borderColor: colors.textColer }}
                   resizeMode="cover"
                 />
                 <View className="ml-4 flex-1">
-                  <Text className="text-xl font-bold" style={{ color: colors.foreground }}>
-                    {user?.username || 'Unknown User'}
+                  <Text
+                    className="text-xl font-bold"
+                    style={{ color: colors.foreground }}
+                  >
+                    {user?.username || "Unknown User"}
                   </Text>
-                  <Text className="text-sm mt-1" style={{ color: colors.mutedForeground }}>
-                    @{user?.username?.split('@')[0] || 'unknown'}
+                  <Text
+                    className="text-sm mt-1"
+                    style={{ color: colors.mutedForeground }}
+                  >
+                    @{user?.username?.split("@")[0] || "unknown"}
                   </Text>
                 </View>
               </View>
-              <View className="mt-4 border-t pt-4" style={{ borderColor: colors.border }}>
+              <View
+                className="mt-4 border-t pt-4"
+                style={{ borderColor: colors.border }}
+              >
                 <View className="flex-row items-center mb-2">
-                  <Ionicons name="mail-outline" size={20} color={colors.textColer} />
-                  <Text className="ml-3 text-sm" style={{ color: colors.foreground }}>
-                    Email: {user?.email || 'N/A'}
+                  <Ionicons
+                    name="mail-outline"
+                    size={20}
+                    color={colors.textColer}
+                  />
+                  <Text
+                    className="ml-3 text-sm"
+                    style={{ color: colors.foreground }}
+                  >
+                    Email: {user?.email || "N/A"}
                   </Text>
                 </View>
                 <View className="flex-row items-center mb-2">
-                  <Ionicons name="call-outline" size={20} color={colors.textColer} />
-                  <Text className="ml-3 text-sm" style={{ color: colors.foreground }}>
-                    Phone: {user?.phone || 'N/A'}
+                  <Ionicons
+                    name="call-outline"
+                    size={20}
+                    color={colors.textColer}
+                  />
+                  <Text
+                    className="ml-3 text-sm"
+                    style={{ color: colors.foreground }}
+                  >
+                    Phone: {user?.phone || "N/A"}
                   </Text>
                 </View>
                 <View className="flex-row items-center">
-                  <Ionicons name="location-outline" size={20} color={colors.textColer} />
-                  <Text className="ml-3 text-sm" style={{ color: colors.foreground }}>
-                    Address: {user?.address || 'N/A'}
+                  <Ionicons
+                    name="location-outline"
+                    size={20}
+                    color={colors.textColer}
+                  />
+                  <Text
+                    className="ml-3 text-sm"
+                    style={{ color: colors.foreground }}
+                  >
+                    Address: {user?.address || "N/A"}
                   </Text>
                 </View>
               </View>
@@ -313,11 +347,14 @@ export default function Profile() {
           ) : (
             <View className="items-center py-6">
               <Image
-                source={require('../../assets/images/logo3.png')}
+                source={require("../../assets/images/logo3.png")}
                 className="w-32 h-32 mb-4"
                 resizeMode="contain"
               />
-              <Text className="text-2xl font-bold mb-6" style={{ color: colors.foreground }}>
+              <Text
+                className="text-2xl font-bold mb-6"
+                style={{ color: colors.foreground }}
+              >
                 Welcome to IoTS!
               </Text>
               <View className="flex-row justify-center items-center my-8 px-4 max-w-md mx-auto">
@@ -328,7 +365,7 @@ export default function Profile() {
                     backgroundColor: colors.primary,
                     borderColor: `${colors.primary}30`,
                   }}
-                  onPress={() => router.push('/auth/Login')}
+                  onPress={() => router.push("/auth/Login")}
                 >
                   <Ionicons
                     name="log-in-outline"
@@ -351,7 +388,7 @@ export default function Profile() {
                     backgroundColor: colors.secondary,
                     borderColor: `${colors.secondary}30`,
                   }}
-                  onPress={() => router.push('/auth/Register')}
+                  onPress={() => router.push("/auth/Register")}
                 >
                   <Ionicons
                     name="person-add-outline"
@@ -373,13 +410,16 @@ export default function Profile() {
 
         {/* Options */}
         <View className="mx-4 mt-6">
-          <Text className="text-lg font-semibold mb-3" style={{ color: colors.foreground }}>
+          <Text
+            className="text-lg font-semibold mb-3"
+            style={{ color: colors.foreground }}
+          >
             Options
           </Text>
           <TouchableOpacity
             className="flex-row items-center p-4 rounded-lg mb-3"
             style={{ backgroundColor: colors.card, ...shadowStyle }}
-            onPress={() => router.push('/order/HistoryOrders')}
+            onPress={() => router.push("/order/HistoryOrders")}
             activeOpacity={0.7}
           >
             <Ionicons name="cart-outline" size={24} color={colors.textColer} />
@@ -396,10 +436,14 @@ export default function Profile() {
           <TouchableOpacity
             className="flex-row items-center p-4 rounded-lg mb-3"
             style={{ backgroundColor: colors.card, ...shadowStyle }}
-            onPress={() => router.push('/warranty/WarrantiesRequest')}
+            // onPress={() => router.push("/warranty/WarrantiesRequest")}
             activeOpacity={0.7}
           >
-            <Ionicons name="shield-checkmark-outline" size={24} color={colors.textColer} />
+            <Ionicons
+              name="shield-checkmark-outline"
+              size={24}
+              color={colors.textColer}
+            />
             <Text className="ml-4 text-lg" style={{ color: colors.foreground }}>
               Warranties
             </Text>
@@ -413,7 +457,7 @@ export default function Profile() {
           <TouchableOpacity
             className="flex-row items-center p-4 rounded-lg mb-3"
             style={{ backgroundColor: colors.card, ...shadowStyle }}
-            onPress={() => router.push('/Transaction/TransactionHistory')}
+            // onPress={() => router.push('/Transaction/TransactionHistory')}
             activeOpacity={0.7}
           >
             <Ionicons name="enter-outline" size={24} color={colors.textColer} />
@@ -430,10 +474,14 @@ export default function Profile() {
           <TouchableOpacity
             className="flex-row items-center p-4 rounded-lg mb-3"
             style={{ backgroundColor: colors.card, ...shadowStyle }}
-            onPress={() => router.push('/profile/Settings')}
+            // onPress={() => router.push("/profile/Settings")}
             activeOpacity={0.7}
           >
-            <Ionicons name="settings-outline" size={24} color={colors.textColer} />
+            <Ionicons
+              name="settings-outline"
+              size={24}
+              color={colors.textColer}
+            />
             <Text className="ml-4 text-lg" style={{ color: colors.foreground }}>
               Settings
             </Text>
@@ -451,18 +499,20 @@ export default function Profile() {
             style={{ backgroundColor: colors.card, ...shadowStyle }}
           >
             <Ionicons
-              name={theme === 'dark' ? 'moon-outline' : 'sunny-outline'}
+              name={theme === "dark" ? "moon-outline" : "sunny-outline"}
               size={24}
               color={colors.textColer}
             />
             <Text className="ml-4 text-lg" style={{ color: colors.foreground }}>
-              Toggle Theme ({theme === 'dark' ? 'Dark' : 'Light'})
+              Toggle Theme ({theme === "dark" ? "Dark" : "Light"})
             </Text>
             <Switch
-              value={theme === 'dark'}
+              value={theme === "dark"}
               onValueChange={toggleTheme}
               trackColor={{ false: colors.muted, true: colors.primary }}
-              thumbColor={theme === 'dark' ? colors.primaryForeground : colors.foreground}
+              thumbColor={
+                theme === "dark" ? colors.primaryForeground : colors.foreground
+              }
               className="ml-auto"
             />
           </View>

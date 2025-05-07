@@ -1,8 +1,8 @@
-import { View, Text, TouchableOpacity } from 'react-native';
-import { useThemeColors } from '../../hooks/useThemeColors';
-import { Truck } from 'react-native-feather';
-import SellerGroup from './SellerGroup';
-import dayjs from 'dayjs';
+import { View, Text, TouchableOpacity } from "react-native";
+import { useThemeColors } from "../../hooks/useThemeColors";
+import { Truck } from "react-native-feather";
+import SellerGroup from "./SellerGroup";
+import dayjs from "dayjs";
 
 type OrderItem = {
   orderItemId: number;
@@ -58,20 +58,29 @@ export default function OrderCard({
   const trackingId = order.orderDetailsGrouped[0]?.trackingId;
 
   const formatDate = (dateString: string) => {
-    return dayjs(dateString).format('DD/MM/YYYY HH:mm');
+    return dayjs(dateString).format("DD/MM/YYYY HH:mm");
   };
 
   const formatPrice = (price: number) => {
-    return price.toLocaleString('vi-VN') + '₫';
+    return price.toLocaleString("vi-VN") + "₫";
   };
 
   return (
-    <View className="p-6 rounded-lg shadow-md my-4 border bg-white" style={{ borderColor: colors.border }}>
+    <View
+      className="p-6 rounded-lg shadow-md my-4 border bg-white"
+      style={{ borderColor: colors.border }}
+    >
       {/* Order Header */}
-      <View className="flex-row justify-between items-center border-b pb-4 mb-4" style={{ borderColor: colors.border }}>
+      <View
+        className="flex-row justify-between items-center border-b pb-4 mb-4"
+        style={{ borderColor: colors.border }}
+      >
         <View>
           <View className="flex-row items-center space-x-2 mb-2">
-            <Text className="text-gray-600" style={{ color: colors.mutedForeground }}>
+            <Text
+              className="text-gray-600"
+              style={{ color: colors.mutedForeground }}
+            >
               Order code:
             </Text>
             <Text className="font-bold" style={{ color: colors.foreground }}>
@@ -79,7 +88,10 @@ export default function OrderCard({
             </Text>
           </View>
           <View className="flex-row items-center space-x-2">
-            <Text className="text-gray-600" style={{ color: colors.mutedForeground }}>
+            <Text
+              className="text-gray-600"
+              style={{ color: colors.mutedForeground }}
+            >
               Create date:
             </Text>
             <Text className="font-medium" style={{ color: colors.foreground }}>
@@ -89,18 +101,20 @@ export default function OrderCard({
         </View>
         <View className="flex-row items-center space-x-2">
           {order.orderDetailsGrouped.some(
-            (group) => group.orderItemStatus === 2 || group.orderItemStatus === 3
-          ) && trackingId && (
-            <>
-              <TouchableOpacity onPress={() => onTrackClick(trackingId)}>
-                <Truck width={24} height={24} color="#10B981" />
-              </TouchableOpacity>
-              <Text style={{ color: colors.mutedForeground }}>|</Text>
-            </>
-          )}
-          {order.orderStatusId === '1' ? (
+            (group) =>
+              group.orderItemStatus === 2 || group.orderItemStatus === 3
+          ) &&
+            trackingId && (
+              <>
+                <TouchableOpacity onPress={() => onTrackClick(trackingId)}>
+                  <Truck width={24} height={24} color="#10B981" />
+                </TouchableOpacity>
+                <Text style={{ color: colors.mutedForeground }}>|</Text>
+              </>
+            )}
+          {order.orderStatusId === "1" ? (
             <Text className="text-green-600 pl-3">PAID</Text>
-          ) : order.orderStatusId === '2' ? (
+          ) : order.orderStatusId === "2" ? (
             <Text className="text-red-600 pl-3">CANCELLED</Text>
           ) : (
             <Text className="text-yellow-600 pl-3">CASH PAYMENT</Text>
@@ -126,20 +140,29 @@ export default function OrderCard({
           <Text className="font-medium" style={{ color: colors.foreground }}>
             Shipping fee:
           </Text>
-          <Text style={{ color: colors.foreground }}>{formatPrice(order.shippingFee)}</Text>
+          <Text style={{ color: colors.foreground }}>
+            {formatPrice(order.shippingFee)}
+          </Text>
         </View>
         <View className="flex-row items-center space-x-2">
-          <Text className="font-medium text-lg" style={{ color: colors.foreground }}>
+          <Text
+            className="font-medium text-lg"
+            style={{ color: colors.foreground }}
+          >
             Total:
           </Text>
-          <Text className="text-red-600 font-bold text-lg">{formatPrice(order.totalPrice)}</Text>
+          <Text className="text-red-600 font-bold text-lg">
+            {formatPrice(order.totalPrice)}
+          </Text>
         </View>
       </View>
 
       {/* Action Buttons */}
       <View className="flex-row justify-end space-x-3 mt-6">
-        {order.orderDetailsGrouped.some((group) => group.orderItemStatus === 1) && (
-          order.orderStatusId === '3' ? (
+        {order.orderDetailsGrouped.some(
+          (group) => group.orderItemStatus === 1
+        ) &&
+          (order.orderStatusId === "3" ? (
             <TouchableOpacity
               className="bg-red-500 rounded-md px-4 py-2"
               onPress={() => onCancelCashPayment(order.orderId)}
@@ -149,12 +172,16 @@ export default function OrderCard({
           ) : (
             <TouchableOpacity
               className="bg-red-500 rounded-md px-4 py-2"
-              onPress={() => onCancelClick(order.orderId, order.orderDetailsGrouped[0].sellerId)}
+              onPress={() =>
+                onCancelClick(
+                  order.orderId,
+                  order.orderDetailsGrouped[0].sellerId
+                )
+              }
             >
               <Text className="text-white font-semibold">Cancel Order</Text>
             </TouchableOpacity>
-          )
-        )}
+          ))}
       </View>
     </View>
   );

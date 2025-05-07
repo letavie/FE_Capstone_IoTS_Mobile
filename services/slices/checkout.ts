@@ -10,7 +10,6 @@ interface CreateOrderParams {
   wardId: number;
   addressId?: number;
   deliver_option: string;
-  returnUrl: string;
 }
 
 interface ApiResponse {
@@ -69,62 +68,20 @@ interface TotalPriceResponse {
   message: string;
 }
 
-// export const createOrder = async (
-//   params: CreateOrderParams
-// ): Promise<OrderResponse> => {
-//   try {
-//     const response = await api.post(
-//       `/api/Order/create-order?returnUrl=${encodeURIComponent(
-//         params.returnUrl
-//       )}`,
-//       {
-//         address: params.address,
-//         contactNumber: params.contactNumber,
-//         notes: params.notes,
-//         provinceId: params.provinceId,
-//         districtId: params.districtId,
-//         wardId: params.wardId,
-//         addressId: params.addressId,
-//         deliver_option: params.deliver_option,
-//       }
-//     );
-
-//     if (!response.data.paymentUrl) {
-//       throw new Error("Không nhận được URL thanh toán từ server");
-//     }
-
-//     return {
-//       paymentUrl: response.data.paymentUrl,
-//       orderId: response.data.orderId,
-//     };
-//   } catch (error: any) {
-//     console.error("Error creating order:", error);
-//     throw new Error(
-//       error.response?.data?.message ||
-//         error.response?.data?.errors?.join(", ") ||
-//         "Không thể tạo đơn hàng"
-//     );
-//   }
-// };
 export const createOrder = async (
   params: CreateOrderParams
 ): Promise<OrderResponse> => {
   try {
-    const response = await api.post(
-      `/api/Order/create-order?returnUrl=${encodeURIComponent(
-        params.returnUrl
-      )}`,
-      {
-        address: params.address,
-        contactNumber: params.contactNumber,
-        notes: params.notes,
-        provinceId: params.provinceId,
-        districtId: params.districtId,
-        wardId: params.wardId,
-        addressId: params.addressId,
-        deliver_option: params.deliver_option,
-      }
-    );
+    const response = await api.post(`/api/Order/create-order-by-mobile`, {
+      address: params.address,
+      contactNumber: params.contactNumber,
+      notes: params.notes,
+      provinceId: params.provinceId,
+      districtId: params.districtId,
+      wardId: params.wardId,
+      addressId: params.addressId,
+      deliver_option: params.deliver_option,
+    });
 
     console.log("API Response:", JSON.stringify(response.data, null, 2)); // Log full response
 
