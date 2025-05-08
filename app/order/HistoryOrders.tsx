@@ -524,7 +524,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    position: "sticky",
+    position: "absolute",
     top: 0,
     zIndex: 1,
   },
