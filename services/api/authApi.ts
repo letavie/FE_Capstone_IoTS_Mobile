@@ -48,16 +48,18 @@
 //     throw error;
 //   }
 // };
-import api from './apiConfig';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import api from "./apiConfig";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const requestOtp = async (email: string) => {
   try {
-    const response = await api.post('/api/customer/create-customer-user-request-verify-otp', { email });
+    const response = await api.post(
+      "/api/customer/create-customer-user-request-verify-otp",
+      { email }
+    );
     return response.data;
   } catch (error: any) {
-    throw error; 
+    throw error;
   }
 };
 
@@ -74,34 +76,35 @@ export const registerCustomer = async (payload: {
   password: string;
 }) => {
   try {
-    const response = await api.post('/api/customer/register-customer-user', payload);
+    const response = await api.post(
+      "/api/customer/register-customer-user",
+      payload
+    );
     return response.data;
   } catch (error: any) {
-   
     throw error; // Throw the message directly as a string
   }
 };
 
 export const login = async (payload: { email: string; password: string }) => {
   try {
-    const response = await api.post('/api/login', payload);
-    console.log('Login response:', response.data); 
+    const response = await api.post("/api/login", payload);
+    console.log("Login response:", response.data);
     // if (response.data.data) {
     //   await AsyncStorage.setItem('token', response.data.data.token);
     //   await AsyncStorage.setItem('user', JSON.stringify(response.data.data));
     // }
     if (response.data?.data?.token) {
-      await AsyncStorage.setItem('token', response.data.data.token);
-      await AsyncStorage.setItem('user', JSON.stringify(response.data.data));
+      await AsyncStorage.setItem("token", response.data.data.token);
+      await AsyncStorage.setItem("user", JSON.stringify(response.data.data));
       // Verify the token was stored
-      const storedToken = await AsyncStorage.getItem('token');
-      console.log('Stored token:', storedToken);
+      const storedToken = await AsyncStorage.getItem("token");
+      console.log("Stored token:", storedToken);
     } else {
-      throw new Error('Token not found in response');
+      throw new Error("Token not found in response");
     }
     return response.data;
   } catch (error: any) {
-    console.error('Login Fail:', error); 
     throw error;
   }
 };

@@ -111,8 +111,8 @@ export default function RootLayout() {
         if (token) {
           Toast.show({
             type: "info",
-            text1: "Chào mừng",
-            text2: "Ứng dụng đã sẵn sàng",
+            text1: "Welcome",
+            text2: "Application is now ready",
             visibilityTime: 4000,
           });
 
