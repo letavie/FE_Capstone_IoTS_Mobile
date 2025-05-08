@@ -4,36 +4,15 @@
     "slug": "FE_Capstone_IoTS_Mobile",
     "version": "1.0.0",
     "orientation": "portrait",
+    "jsEngine": "hermes",
     "icon": "./assets/images/icon.png",
     "scheme": "fe-capstone-iots-mobile",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
-    "jsEngine": "jsc",
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.lucoder.FE_Capstone_IoTS_Mobile",
-      "jsEngine": "jsc"
-    },
     "android": {
       "package": "com.lucoder.FE_Capstone_IoTS_Mobile",
-      "intentFilters": [
-        {
-          "action": "VIEW",
-          "data": [
-            {
-              "scheme": "fe-capstone-iots-mobile",
-              "host": "*",
-              "pathPrefix": "/"
-            }
-          ],
-          "category": ["BROWSABLE", "DEFAULT"]
-        }
-      ]
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
     },
     "plugins": [
       "expo-router",
@@ -41,23 +20,18 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
       ]
     ],
-    "experiments": {
-      "typedRoutes": true
-    },
     "extra": {
       "router": {
-        "origin": "fe-capstone-iots-mobile://"
+        "origin": false
       },
       "eas": {
         "projectId": "3f644a27-e3fa-40fd-a249-b91b735e2d86"
       }
-    },
-    "owner": "lucoder"
+    }
   }
 }

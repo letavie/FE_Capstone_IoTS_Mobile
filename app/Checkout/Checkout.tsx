@@ -88,7 +88,7 @@ const Checkout = () => {
         selectedProvinceId &&
         selectedDistrictId &&
         selectedWardId &&
-        address
+        address.trim() !== ""
       ) {
         setLoading(true);
         try {
